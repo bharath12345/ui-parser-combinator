@@ -1,0 +1,7 @@
+# this is a comment
+DEFINE SECTION ContentBranding
+  HEADING title="Content branding details"
+  TEXTINPUT name="Name" id="textInput1" value="Type here" required=true
+  TEXTINPUT name="Description" id="textInput2" value="Type here"
+;
+
