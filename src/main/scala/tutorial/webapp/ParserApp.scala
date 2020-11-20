@@ -7,10 +7,6 @@ object ParserApp {
     println("Hello test!")
     val parser = new SchemaParser()
     val tokens: List[Token] = parser.getTokens()
-    tokens.foreach {
-      case st: SectionToken =>
-      case ht: HeadingToken =>
-      case txt: TextInputToken =>
-    }
+    tokens.foreach (Render.apply)
   }
 }

@@ -1,15 +1,25 @@
 <!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>The Scala.js Tutorial</title>
-</head>
-<body>
-<!-- Include Scala.js compiled code -->
-<script type="text/javascript" src="./target/scala-2.13/parser-combinator-fastopt.js"></script>
-<button id="click-me-button" type="button" onclick="addClickedMessage()">
-    Click me!
-</button>
-<p></p>
-</body>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <title>DSL driven UI</title>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@@5.0.0-alpha3/dist/js/bootstrap.bundle.min.js"
+                integrity="sha384-popRpmFF9JQgExhfw5tZT4I9/CI5e2QcuUZPOVXb1m7qUmeR2b50u+YFEYe1wgzy"
+                crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-alpha3/dist/js/bootstrap.bundle.min.js"
+                integrity="sha384-popRpmFF9JQgExhfw5tZT4I9/CI5e2QcuUZPOVXb1m7qUmeR2b50u+YFEYe1wgzy"
+                crossorigin="anonymous"></script>
+
+    </head>
+    <body>
+        <script type="text/javascript" src="./target/scala-2.13/parser-combinator-fastopt.js"></script>
+        <div class="container">
+            <form id="only-form">
+
+            </form>
+        </div>
+    </body>
 </html>
