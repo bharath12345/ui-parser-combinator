@@ -11,19 +11,10 @@ class SchemaParser extends RegexParsers {
     val section_parser: Parser[SectionToken] = SectionLexer().asInstanceOf[Parser[SectionToken]]
     val heading_parser: Parser[HeadingToken] = HeadingLexer().asInstanceOf[Parser[HeadingToken]]
     val textinput_parser: Parser[TextInputToken] = TextInputTokenLexer().asInstanceOf[Parser[TextInputToken]]
-    (section_parser | heading_parser | textinput_parser)
+    section_parser | heading_parser | textinput_parser
   }
 
-  def getTokens(): List[Token] = {
-    val grammar: Array[String] =
-      """# this is a comment
-        |DEFINE SECTION ContentBranding
-        |  HEADING title="Content branding details"
-        |  TEXTINPUT name="Name" id="textInput1" value="Type here" required=true
-        |  TEXTINPUT name="Description" id="textInput2" value="Type here"
-        |;
-        |""".stripMargin.split("\\n")
-
+  def getTokens(grammar: Array[String]): List[Token] = {
     (for {
       code <- grammar
       line = code.trim

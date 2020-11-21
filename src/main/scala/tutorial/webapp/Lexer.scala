@@ -76,17 +76,23 @@ object HeadingLexer extends RegexLexer {
 }
 
 object TextInputTokenLexer extends RegexLexer {
-  override protected val regex: Regex = s"""^TEXTINPUT\\s+name\\s*=\\s*"(.*?)"\\s+id\\s*=\\s*"(.*?)"\\s+(.*?)(value\\s*=\\s*"(.*?)")?\\s*(required\\s*=\\s*(.*?))?""".r
+  override protected val regex: Regex = s"""^TEXTINPUT\\s+name\\s*=\\s*"(.*?)"\\s+id\\s*=\\s*"(.*?)"\\s*(value\\s*=\\s*"(.*?)")?\\s*(required\\s*=\\s*(.*?))?$$""".r
 
   def apply(): Parser[TextInputToken] =
     regexMatch(regex) ^^ (m => get(m.subgroups.map(x => if (x == null) x else x.trim): _*))
 
   protected def get(values: String*): TextInputToken = {
-    val list = values.toArray
-    list.length match {
-      case 2 => TextInputToken(list(0), list(1), None, false)
-      case 3 => TextInputToken(list(0), list(1), Option(list(2)), false)
-      case 4 => TextInputToken(list(0), list(1), Option(list(2)), list(3).toBoolean)
+    val list = values.toList
+    if(list.length != 6) {
+      println(s"error: more than 6 elements in parse result $list")
+      null
+    } else {
+      println(s"text input input values = $list")
+      list match {
+        case a +: b +: null +: null +: null +: null +: Nil => TextInputToken(a, b, None, false)
+        case a +: b +: c +: d +: null +: null +: Nil => TextInputToken(a, b, Option(d), false)
+        case a +: b +: c +: d +: e +: f +: Nil => TextInputToken(a, b, Option(d), f.toBoolean)
+      }
     }
   }
 }
