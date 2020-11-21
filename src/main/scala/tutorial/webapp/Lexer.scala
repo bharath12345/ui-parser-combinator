@@ -19,7 +19,16 @@ object Lexer {
 
   case class HeadingToken(name: String) extends SectionTokens
 
-  case class TextInputToken(name: String, id: String, value: Option[String], required: Boolean) extends SectionTokens
+  trait TokenCommon {
+    val id_name_r = """\s+id\s*=\s*(.*?)\s+name\s*=\s*"(.*?)"\s*"""
+    val req_enb_disp_r = """\s*(required)?\s*(disabled)?\s*(nodisplay)?"""
+  }
+
+  case class TextInputToken(name: String, id: String, value: Option[String],
+                            required: Boolean, enabled: Boolean, display: Boolean) extends SectionTokens
+
+  case class SelectToken(name: String, id: String, values: List[String],
+                         required: Boolean, enabled: Boolean, display: Boolean) extends SectionTokens with TokenCommon
 
 }
 
@@ -75,24 +84,56 @@ object HeadingLexer extends RegexLexer {
     HeadingToken(values.toList.head)
 }
 
-object TextInputTokenLexer extends RegexLexer {
-  override protected val regex: Regex = s"""^TEXTINPUT\\s+name\\s*=\\s*"(.*?)"\\s+id\\s*=\\s*"(.*?)"\\s*(value\\s*=\\s*"(.*?)")?\\s*(required\\s*=\\s*(.*?))?$$""".r
+object TextInputTokenLexer extends RegexLexer with TokenCommon {
+  private val optional_value_r = """(value\s*=\s*"(.*?)")?"""
+  override protected val regex: Regex = s"""^TEXTINPUT${id_name_r}${optional_value_r}${req_enb_disp_r}$$""".r
 
   def apply(): Parser[TextInputToken] =
     regexMatch(regex) ^^ (m => get(m.subgroups.map(x => if (x == null) x else x.trim): _*))
 
   protected def get(values: String*): TextInputToken = {
-    val list = values.toList
-    if(list.length != 6) {
-      println(s"error: more than 6 elements in parse result $list")
+    val list = values.toArray
+    val size = 7
+    if(list.length != size) {
+      println(s"error: more than $size elements in parse result ${list.toList}")
       null
     } else {
-      println(s"text input input values = $list")
-      list match {
-        case a +: b +: null +: null +: null +: null +: Nil => TextInputToken(a, b, None, false)
-        case a +: b +: c +: d +: null +: null +: Nil => TextInputToken(a, b, Option(d), false)
-        case a +: b +: c +: d +: e +: f +: Nil => TextInputToken(a, b, Option(d), f.toBoolean)
+      println(s"text input input values = ${list.toList}")
+      var ti = TextInputToken(list(0), list(1), None, false, false, false)
+      if(list(2) != null) ti = ti.copy(value = Option(list(3)))
+      if(list(4) != null) ti = ti.copy(required = true)
+      if(list(5) == null) ti = ti.copy(enabled = true)
+      if(list(6) == null) ti = ti.copy(display = true)
+      ti
+    }
+  }
+}
+
+object SelectLexer extends RegexLexer with TokenCommon {
+  private val options_r = """(options\s*=\s*\[(.*?)\])?"""
+  override protected val regex: Regex = s"""SELECT${id_name_r}${options_r}${req_enb_disp_r}$$""".r
+
+  def apply(): Parser[SelectToken] =
+    regexMatch(regex) ^^ (m => get(m.subgroups.map(x => if (x == null) x else x.trim): _*))
+
+  protected def get(values: String*): SelectToken = {
+    val list = values.toArray
+    val size = 7
+    if(list.length != size) {
+      println(s"error: more than $size elements in parse result ${list.toList}")
+      null
+    } else {
+      println(s"text input input values = ${list.toList}")
+      var st = SelectToken(list(0), list(1), List(), false, false, false)
+      if(list(2) != null) {
+        val x: List[String] = list(3).split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1).toList
+        val y: List[String] = x.map(_.replace("\"", ""))
+        st = st.copy(values = y)
       }
+      if(list(4) != null) st = st.copy(required = true)
+      if(list(5) == null) st = st.copy(enabled = true)
+      if(list(6) == null) st = st.copy(display = true)
+      st
     }
   }
 }

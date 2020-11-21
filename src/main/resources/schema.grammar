@@ -1,8 +1,20 @@
 # this is a comment
 DEFINE SECTION ContentBranding
   HEADING title="Content branding details"
-  TEXTINPUT name="One" id="textInput1"
-  TEXTINPUT name="Two" id="textInput2" value="Type here"
-  TEXTINPUT name="Three" id="textInput3" value="Type here" required=true
+  TEXTINPUT id=textInput1 name="Textbox One"
+  TEXTINPUT id=textInput2 name="Textbox Two"   value="Type here" disabled
+  TEXTINPUT id=textInput3 name="Textbox Three" value="Type here" required
+  SELECT id=select1 name="Select City" options=[ "Ford", "BMW", "Fiat" ] nodisplay
+
+  IF textInput1 EQUALS "test"
+    DISABLE textInput3
+  ELSIF textInput1 MATCHES REGEX((mon|tues|wednes|thurs|fri|satur|sun)day)
+    ENABLE textInput2
+    IF textInput2 CONTAINS "kumar"
+      ADD select1
+    ENDIF
+  ELSE
+    # maybe something here
+  ENDIF
 ;
 

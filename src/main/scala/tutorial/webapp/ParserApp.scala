@@ -8,9 +8,10 @@ object ParserApp {
     """# this is a comment
       |DEFINE SECTION ContentBranding
       |  HEADING title="Content branding details"
-      |  TEXTINPUT name="One" id="textInput1"
-      |  TEXTINPUT name="Two" id="textInput2" value="Type here"
-      |  TEXTINPUT name="Three" id="textInput3" value="Type here" required=true
+      |  TEXTINPUT id=textInput1 name="Textbox One"
+      |  TEXTINPUT id=textInput2 name="Textbox Two"   value="Type here" disabled
+      |  TEXTINPUT id=textInput3 name="Textbox Three" value="Type here" required
+      |  SELECT id=select1 name="Select City" options=[ "Ford", "BMW", "Fiat" ] nodisplay
       |;
       |""".stripMargin.split("\\n")
 
