@@ -5,6 +5,11 @@ import tutorial.webapp.Lexer._
 import scala.util.matching.Regex
 import scala.util.parsing.combinator.RegexParsers
 
+trait TokenCommon {
+  val id_name_r = """\s+id\s*=\s*(.*?)\s+name\s*=\s*"(.*?)"\s*"""
+  val req_enb_disp_r = """\s*(required)?\s*(disabled)?\s*(nodisplay)?"""
+}
+
 object Lexer {
 
   sealed trait Token
@@ -13,22 +18,35 @@ object Lexer {
     override def toString: String = "EXIT()"
   }
 
-  sealed trait SectionTokens extends Token
-
-  case class SectionToken(name: String) extends SectionTokens
-
-  case class HeadingToken(name: String) extends SectionTokens
-
-  trait TokenCommon {
-    val id_name_r = """\s+id\s*=\s*(.*?)\s+name\s*=\s*"(.*?)"\s*"""
-    val req_enb_disp_r = """\s*(required)?\s*(disabled)?\s*(nodisplay)?"""
-  }
-
+  sealed trait SectionToken extends Token
+  case class HeadingToken(name: String, title: Option[String]) extends SectionToken
   case class TextInputToken(name: String, id: String, value: Option[String],
-                            required: Boolean, enabled: Boolean, display: Boolean) extends SectionTokens
-
+                            required: Boolean, enabled: Boolean, display: Boolean) extends SectionToken
   case class SelectToken(name: String, id: String, values: List[String],
-                         required: Boolean, enabled: Boolean, display: Boolean) extends SectionTokens with TokenCommon
+                         required: Boolean, enabled: Boolean, display: Boolean) extends SectionToken with TokenCommon
+
+
+  sealed trait LogicTokens extends Token
+
+  case class LogicBlock(logicTokens: List[LogicTokens], blocks: List[LogicBlock]) extends Token
+
+  abstract sealed class EqualsToken(st: SectionToken, str: String, statements: List[Statements]) extends LogicTokens
+  abstract sealed class MatchesToken(st: SectionToken, regex: Regex, statements: List[Statements]) extends LogicTokens
+  abstract sealed class ContainsToken(st: SectionToken, str: String, statements: List[Statements]) extends LogicTokens
+
+  case class IfEqualsToken(st: SectionToken, str: String, statements: List[Statements]) extends EqualsToken(st, str, statements)
+  case class IfMatchesToken(st: SectionToken, regex: Regex, statements: List[Statements]) extends MatchesToken(st, regex, statements)
+  case class IfContainsToken(st: SectionToken, str: String, statements: List[Statements]) extends ContainsToken(st, str, statements)
+
+  case class ElseIfEqualsToken(st: SectionToken, str: String, statements: List[Statements]) extends EqualsToken(st, str, statements)
+  case class ElseIfMatchesToken(st: SectionToken, regex: Regex, statements: List[Statements]) extends MatchesToken(st, regex, statements)
+  case class ElseIfContainsToken(st: SectionToken, str: String, statements: List[Statements]) extends ContainsToken(st, str, statements)
+
+  sealed trait Statements extends Token
+  case class AddStatement(st: SectionToken) extends Statements
+  case class RemoveStatement(st: SectionToken) extends Statements
+  case class EnableStatement(st: SectionToken) extends Statements
+  case class DisableStatement(st: SectionToken) extends Statements
 
 }
 
@@ -64,24 +82,17 @@ object ExitLexer extends RegexLexer {
 
 object SectionLexer extends RegexLexer {
 
-  override protected val regex: Regex = s"""^DEFINE\\s+SECTION\\s+(\\w+)$$""".r
+  override protected val regex: Regex = s"""^DEFINE\\s+SECTION\\s+(\\w+)\\s*(title\\s*=\\s*"(.*?)")?$$""".r
 
   def apply(): Parser[SectionToken] =
     regexMatch(regex) ^^ (m => get(m.subgroups.map(x => if (x == null) x else x.trim): _*))
 
-  protected def get(values: String*): SectionToken =
-    SectionToken(values.toList.head)
-}
-
-object HeadingLexer extends RegexLexer {
-
-  override protected val regex: Regex = s"""^HEADING\\s+title\\s*=\\s*"(.*?)"$$""".r
-
-  def apply(): Parser[HeadingToken] =
-    regexMatch(regex) ^^ (m => get(m.subgroups.map(x => if (x == null) x else x.trim): _*))
-
-  protected def get(values: String*): HeadingToken =
-    HeadingToken(values.toList.head)
+  protected def get(values: String*): SectionToken = {
+    val list = values.toArray
+    var headingToken = HeadingToken(list(0), None)
+    if(list(1) != null) headingToken = headingToken.copy(title = Option(list(2)))
+    headingToken
+  }
 }
 
 object TextInputTokenLexer extends RegexLexer with TokenCommon {

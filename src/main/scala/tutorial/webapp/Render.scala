@@ -7,7 +7,7 @@ import tutorial.webapp.Lexer.{EXIT, HeadingToken, SectionToken, SelectToken, Tex
 
 import scala.scalajs.js.annotation.JSExportTopLevel
 
-class Render(st: SectionToken) {
+class Render() {
 
   private val form = {
     val div = document.createElement("div")
@@ -31,7 +31,8 @@ class Render(st: SectionToken) {
 
   private def renderHeading(ht: HeadingToken): Unit = {
     val heading = document.createElement("h3")
-    heading.innerText = ht.name
+    heading.id = ht.name
+    ht.title.foreach(x => heading.innerText = x)
     form.appendChild(heading)
   }
 

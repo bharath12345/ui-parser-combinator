@@ -6,8 +6,7 @@ object ParserApp {
 
   val grammar: Array[String] =
     """# this is a comment
-      |DEFINE SECTION ContentBranding
-      |  HEADING title="Content branding details"
+      |DEFINE SECTION ContentBranding title="Content branding details"
       |  TEXTINPUT id=textInput1 name="Textbox One"
       |  TEXTINPUT id=textInput2 name="Textbox Two"   value="Type here" disabled
       |  TEXTINPUT id=textInput3 name="Textbox Three" value="Type here" required
@@ -20,7 +19,7 @@ object ParserApp {
     val parser = new SchemaParser()
     val tokens: List[Token] = parser.getTokens(grammar)
 
-    val render = new Render(tokens.head.asInstanceOf[SectionToken])
-    tokens.tail.foreach (render.apply)
+    val render = new Render()
+    tokens.foreach (render.apply)
   }
 }

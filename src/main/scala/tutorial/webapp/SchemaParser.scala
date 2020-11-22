@@ -6,12 +6,11 @@ import scala.language.postfixOps
 import scala.util.parsing.combinator.RegexParsers
 
 class SchemaParser extends RegexParsers {
-  private def sectionParsers(): Parser[SectionTokens] = {
+  private def sectionParsers(): Parser[SectionToken] = {
     val section_parser: Parser[SectionToken] = SectionLexer().asInstanceOf[Parser[SectionToken]]
-    val heading_parser: Parser[HeadingToken] = HeadingLexer().asInstanceOf[Parser[HeadingToken]]
     val textinput_parser: Parser[TextInputToken] = TextInputTokenLexer().asInstanceOf[Parser[TextInputToken]]
     val select_parser: Parser[SelectToken] = SelectLexer().asInstanceOf[Parser[SelectToken]]
-    section_parser | heading_parser | textinput_parser | select_parser
+    section_parser | textinput_parser | select_parser
   }
 
   def getTokens(grammar: Array[String]): List[Token] = {
