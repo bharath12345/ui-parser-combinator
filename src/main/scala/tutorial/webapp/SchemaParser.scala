@@ -26,6 +26,14 @@ class SchemaParser extends RegexParsers {
     (if_parsers | else_parsers)
   }
 
+  private def statementParsers(): Parser[StatementToken] = {
+    val addLexer: Parser[AddStatementToken] = AddStatementLexer().asInstanceOf[Parser[AddStatementToken]]
+    val removeLexer: Parser[RemoveStatementToken] = RemoveStatementLexer().asInstanceOf[Parser[RemoveStatementToken]]
+    val enableLexer: Parser[EnableStatementToken] = EnableStatementLexer().asInstanceOf[Parser[EnableStatementToken]]
+    val disableLexer: Parser[DisableStatementToken] = DisableStatementLexer().asInstanceOf[Parser[DisableStatementToken]]
+    (addLexer | removeLexer | enableLexer | disableLexer)
+  }
+
   def getTokens(grammar: Array[String]): List[Token] = {
     (for {
       code <- grammar
@@ -39,7 +47,7 @@ class SchemaParser extends RegexParsers {
 
   private def get(line: String): Option[Token] = {
     val exit: Parser[EXIT.type] = ExitLexer().asInstanceOf[Parser[EXIT.type]]
-    val parser = phrase(rep1(exit | sectionParsers() | logicParsers()))
+    val parser = phrase(rep1(exit | sectionParsers() | logicParsers() | statementParsers()))
 
     parse(parser, line) match {
       case NoSuccess(msg, next) =>

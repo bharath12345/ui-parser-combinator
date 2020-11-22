@@ -19,19 +19,20 @@ object Render {
     form
   }
 
-  def render(token: Token): Any = {
-    println(s"incoming token = $token")
-    token match {
-      case ht: HeadingToken => renderHeading(ht)
-      case txt: TextInputToken => renderTextInput(txt)
-      case sel: SelectToken => renderSelect(sel)
-      case EXIT =>
+  def render(ast: AST): Any = {
+    ast.sections.foreach { token =>
+      println(s"incoming token = $token")
+      token match {
+        case ht: HeadingToken => renderHeading(ht)
+        case txt: TextInputToken => renderTextInput(txt)
+        case sel: SelectToken => renderSelect(sel)
+      }
     }
   }
 
   private def renderHeading(ht: HeadingToken): Unit = {
     val heading = document.createElement("h3")
-    heading.id = ht.name
+    heading.id = ht.id
     ht.title.foreach(x => heading.innerText = x)
     form.appendChild(heading)
   }
