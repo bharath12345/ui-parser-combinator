@@ -18,8 +18,7 @@ object ParserApp {
     println("Hello test!")
     val parser = new SchemaParser()
     val tokens: List[Token] = parser.getTokens(grammar)
-
-    val render = new Render()
-    tokens.foreach (render.apply)
+    val ast: AST = AST.buildAST(tokens)
+    Render.render(ast)
   }
 }

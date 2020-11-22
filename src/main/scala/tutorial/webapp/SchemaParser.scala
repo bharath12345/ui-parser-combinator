@@ -13,6 +13,19 @@ class SchemaParser extends RegexParsers {
     section_parser | textinput_parser | select_parser
   }
 
+  private def logicParsers(): Parser[LogicToken] = {
+    val ifEqualsLexer: Parser[IfEqualsToken] = IfEqualsLexer().asInstanceOf[Parser[IfEqualsToken]]
+    val ifMatchesLexer: Parser[IfMatchesToken] = IfEqualsLexer().asInstanceOf[Parser[IfMatchesToken]]
+    val ifContainsLexer: Parser[IfContainsToken] = IfEqualsLexer().asInstanceOf[Parser[IfContainsToken]]
+    val if_parsers = (ifEqualsLexer | ifMatchesLexer | ifContainsLexer)
+
+    val elseIfEqualsLexer: Parser[ElseIfEqualsToken] = ElseIfEqualsLexer().asInstanceOf[Parser[ElseIfEqualsToken]]
+    val elseIfMatchesLexer: Parser[ElseIfMatchesToken] = ElseIfEqualsLexer().asInstanceOf[Parser[ElseIfMatchesToken]]
+    val elseIfContainsLexer: Parser[ElseIfContainsToken] = ElseIfEqualsLexer().asInstanceOf[Parser[ElseIfContainsToken]]
+    val else_parsers = (elseIfEqualsLexer | elseIfMatchesLexer | elseIfContainsLexer)
+    (if_parsers | else_parsers)
+  }
+
   def getTokens(grammar: Array[String]): List[Token] = {
     (for {
       code <- grammar
@@ -25,7 +38,10 @@ class SchemaParser extends RegexParsers {
   }
 
   private def get(line: String): Option[Token] = {
-    parse(getParser(), line) match {
+    val exit: Parser[EXIT.type] = ExitLexer().asInstanceOf[Parser[EXIT.type]]
+    val parser = phrase(rep1(exit | sectionParsers() | logicParsers()))
+
+    parse(parser, line) match {
       case NoSuccess(msg, next) =>
         println(s"Could not parse line = [$line]. error=${msg}")
         None
@@ -34,10 +50,5 @@ class SchemaParser extends RegexParsers {
         println(s"Successfully parsed line = [$line].")
         resultList.headOption
     }
-  }
-
-  private def getParser(): Parser[List[Token]] = {
-    val exit: Parser[EXIT.type] = ExitLexer().asInstanceOf[Parser[EXIT.type]]
-    phrase(rep1(exit | sectionParsers()))
   }
 }

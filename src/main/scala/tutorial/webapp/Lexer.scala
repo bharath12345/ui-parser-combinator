@@ -14,9 +14,7 @@ object Lexer {
 
   sealed trait Token
 
-  case object EXIT extends Token {
-    override def toString: String = "EXIT()"
-  }
+  case object EXIT extends Token
 
   sealed trait SectionToken extends Token
   case class HeadingToken(name: String, title: Option[String]) extends SectionToken
@@ -26,27 +24,28 @@ object Lexer {
                          required: Boolean, enabled: Boolean, display: Boolean) extends SectionToken with TokenCommon
 
 
-  sealed trait LogicTokens extends Token
+  sealed trait LogicToken extends Token
 
-  case class LogicBlock(logicTokens: List[LogicTokens], blocks: List[LogicBlock]) extends Token
+  abstract sealed class EqualsToken(name: String, str: String) extends LogicToken
+  abstract sealed class MatchesToken(name: String, regex: Regex) extends LogicToken
+  abstract sealed class ContainsToken(name: String, str: String) extends LogicToken
 
-  abstract sealed class EqualsToken(st: SectionToken, str: String, statements: List[Statements]) extends LogicTokens
-  abstract sealed class MatchesToken(st: SectionToken, regex: Regex, statements: List[Statements]) extends LogicTokens
-  abstract sealed class ContainsToken(st: SectionToken, str: String, statements: List[Statements]) extends LogicTokens
+  case class IfEqualsToken(name: String, str: String) extends EqualsToken(name, str)
+  case class IfMatchesToken(name: String, regex: Regex) extends MatchesToken(name, regex)
+  case class IfContainsToken(name: String, str: String) extends ContainsToken(name, str)
 
-  case class IfEqualsToken(st: SectionToken, str: String, statements: List[Statements]) extends EqualsToken(st, str, statements)
-  case class IfMatchesToken(st: SectionToken, regex: Regex, statements: List[Statements]) extends MatchesToken(st, regex, statements)
-  case class IfContainsToken(st: SectionToken, str: String, statements: List[Statements]) extends ContainsToken(st, str, statements)
+  case class ElseIfEqualsToken(name: String, str: String) extends EqualsToken(name, str)
+  case class ElseIfMatchesToken(name: String, regex: Regex) extends MatchesToken(name, regex)
+  case class ElseIfContainsToken(name: String, str: String) extends ContainsToken(name, str)
 
-  case class ElseIfEqualsToken(st: SectionToken, str: String, statements: List[Statements]) extends EqualsToken(st, str, statements)
-  case class ElseIfMatchesToken(st: SectionToken, regex: Regex, statements: List[Statements]) extends MatchesToken(st, regex, statements)
-  case class ElseIfContainsToken(st: SectionToken, str: String, statements: List[Statements]) extends ContainsToken(st, str, statements)
+  case object ENDIF extends LogicToken
+  case object ELSE extends LogicToken
 
-  sealed trait Statements extends Token
-  case class AddStatement(st: SectionToken) extends Statements
-  case class RemoveStatement(st: SectionToken) extends Statements
-  case class EnableStatement(st: SectionToken) extends Statements
-  case class DisableStatement(st: SectionToken) extends Statements
+  sealed trait Statement extends Token
+  case class AddStatementToken(name: String) extends Statement
+  case class RemoveStatementToken(name: String) extends Statement
+  case class EnableStatementToken(name: String) extends Statement
+  case class DisableStatementToken(name: String) extends Statement
 
 }
 
@@ -74,10 +73,10 @@ trait RegexLexer extends RegexParsers {
 object ExitLexer extends RegexLexer {
 
   def apply(): Parser[EXIT.type] = {
-    regexMatch(regex) ^^ { case m => EXIT }
+    regexMatch(regex) ^^ (m => EXIT)
   }
 
-  override protected val regex: Regex = """\s*;\s*""".r
+  override protected val regex: Regex = ";".r
 }
 
 object SectionLexer extends RegexLexer {
@@ -148,3 +147,103 @@ object SelectLexer extends RegexLexer with TokenCommon {
     }
   }
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+object IfEqualsLexer extends RegexLexer {
+  override protected val regex: Regex = s"""^IF\\s+(\\w+)\\s+EQUALS\\s+"(.*?)"$$""".r
+
+  def apply(): Parser[IfEqualsToken] =
+    regexMatch(regex) ^^ (m => get(m.subgroups.map(x => if (x == null) x else x.trim): _*))
+
+  protected def get(values: String*): IfEqualsToken = {
+    val list = values.toArray
+    IfEqualsToken(list(0), list(1))
+  }
+}
+
+object IfMatchesLexer extends RegexLexer {
+  override protected val regex: Regex = s"""^IF\\s+(\\w+)\\s+MATCHES\\s+REGEX\((.*?)\)$$""".r
+
+  def apply(): Parser[IfMatchesToken] =
+    regexMatch(regex) ^^ (m => get(m.subgroups.map(x => if (x == null) x else x.trim): _*))
+
+  protected def get(values: String*): IfMatchesToken = {
+    val list = values.toArray
+    IfMatchesToken(list(0), list(1).r)
+  }
+}
+
+object IfContainsLexer extends RegexLexer {
+  override protected val regex: Regex = s"""^IF\\s+(\\w+)\\s+CONTAINS\\s+"(.*?)"$$""".r
+
+  def apply(): Parser[IfContainsToken] =
+    regexMatch(regex) ^^ (m => get(m.subgroups.map(x => if (x == null) x else x.trim): _*))
+
+  protected def get(values: String*): IfContainsToken = {
+    val list = values.toArray
+    IfContainsToken(list(0), list(1))
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+object ElseIfEqualsLexer extends RegexLexer {
+  override protected val regex: Regex = s"""^IF\\s+(\\w+)\\s+EQUALS\\s+"(.*?)"$$""".r
+
+  def apply(): Parser[ElseIfEqualsToken] =
+    regexMatch(regex) ^^ (m => get(m.subgroups.map(x => if (x == null) x else x.trim): _*))
+
+  protected def get(values: String*): ElseIfEqualsToken = {
+    val list = values.toArray
+    ElseIfEqualsToken(list(0), list(1))
+  }
+}
+
+
+object ElseIfMatchesLexer extends RegexLexer {
+  override protected val regex: Regex = s"""^IF\\s+(\\w+)\\s+MATCHES\\s+REGEX\((.*?)\)$$""".r
+
+  def apply(): Parser[ElseIfMatchesToken] =
+    regexMatch(regex) ^^ (m => get(m.subgroups.map(x => if (x == null) x else x.trim): _*))
+
+  protected def get(values: String*): ElseIfMatchesToken = {
+    val list = values.toArray
+    ElseIfMatchesToken(list(0), list(1).r)
+  }
+}
+
+object ElseIfContainsLexer extends RegexLexer {
+  override protected val regex: Regex = s"""^IF\\s+(\\w+)\\s+CONTAINS\\s+"(.*?)"$$""".r
+
+  def apply(): Parser[ElseIfContainsToken] =
+    regexMatch(regex) ^^ (m => get(m.subgroups.map(x => if (x == null) x else x.trim): _*))
+
+  protected def get(values: String*): ElseIfContainsToken = {
+    val list = values.toArray
+    ElseIfContainsToken(list(0), list(1))
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+object EndifLexer extends RegexLexer {
+
+  def apply(): Parser[ENDIF.type] = {
+    regexMatch(regex) ^^ (m => ENDIF)
+  }
+
+  override protected val regex: Regex = "ENDIF".r
+}
+
+object ElseLexer extends RegexLexer {
+
+  def apply(): Parser[ELSE.type] = {
+    regexMatch(regex) ^^ (m => ELSE)
+  }
+
+  override protected val regex: Regex = "ELSE".r
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+

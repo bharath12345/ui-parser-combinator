@@ -7,7 +7,7 @@ import tutorial.webapp.Lexer.{EXIT, HeadingToken, SectionToken, SelectToken, Tex
 
 import scala.scalajs.js.annotation.JSExportTopLevel
 
-class Render() {
+object Render {
 
   private val form = {
     val div = document.createElement("div")
@@ -19,7 +19,7 @@ class Render() {
     form
   }
 
-  def apply(token: Token): Any = {
+  def render(token: Token): Any = {
     println(s"incoming token = $token")
     token match {
       case ht: HeadingToken => renderHeading(ht)
