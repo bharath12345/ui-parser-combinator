@@ -11,6 +11,14 @@ object ParserApp {
       |  TEXTINPUT id=textInput2 name="Textbox Two"   value="Type here" disabled
       |  TEXTINPUT id=textInput3 name="Textbox Three" value="Type here" required
       |  SELECT id=select1 name="Select City" options=[ "Ford", "BMW", "Fiat" ] nodisplay
+      |
+      |  IF textInput1 EQUALS "test"
+      |    DISABLE textInput3
+      |  ELSIF textInput1 MATCHES REGEX((mon|tues|wednes|thurs|fri|satur|sun)day)
+      |    ENABLE textInput2
+      |  ELSE
+      |    # maybe something here
+      |  ENDIF
       |;
       |""".stripMargin.split("\\n")
 

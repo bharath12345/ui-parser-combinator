@@ -15,14 +15,17 @@ class SchemaParser extends RegexParsers {
 
   private def logicParsers(): Parser[LogicToken] = {
     val ifEqualsLexer: Parser[IfEqualsToken] = IfEqualsLexer().asInstanceOf[Parser[IfEqualsToken]]
-    val ifMatchesLexer: Parser[IfMatchesToken] = IfEqualsLexer().asInstanceOf[Parser[IfMatchesToken]]
-    val ifContainsLexer: Parser[IfContainsToken] = IfEqualsLexer().asInstanceOf[Parser[IfContainsToken]]
+    val ifMatchesLexer: Parser[IfMatchesToken] = IfMatchesLexer().asInstanceOf[Parser[IfMatchesToken]]
+    val ifContainsLexer: Parser[IfContainsToken] = IfContainsLexer().asInstanceOf[Parser[IfContainsToken]]
     val if_parsers = (ifEqualsLexer | ifMatchesLexer | ifContainsLexer)
 
     val elseIfEqualsLexer: Parser[ElseIfEqualsToken] = ElseIfEqualsLexer().asInstanceOf[Parser[ElseIfEqualsToken]]
-    val elseIfMatchesLexer: Parser[ElseIfMatchesToken] = ElseIfEqualsLexer().asInstanceOf[Parser[ElseIfMatchesToken]]
-    val elseIfContainsLexer: Parser[ElseIfContainsToken] = ElseIfEqualsLexer().asInstanceOf[Parser[ElseIfContainsToken]]
-    val else_parsers = (elseIfEqualsLexer | elseIfMatchesLexer | elseIfContainsLexer)
+    val elseIfMatchesLexer: Parser[ElseIfMatchesToken] = ElseIfMatchesLexer().asInstanceOf[Parser[ElseIfMatchesToken]]
+    val elseIfContainsLexer: Parser[ElseIfContainsToken] = ElseIfContainsLexer().asInstanceOf[Parser[ElseIfContainsToken]]
+
+    val elseLexer: Parser[ELSE.type] = ElseLexer().asInstanceOf[Parser[ELSE.type]]
+    val endifLexer: Parser[ENDIF.type] = EndifLexer().asInstanceOf[Parser[ENDIF.type]]
+    val else_parsers = (elseIfEqualsLexer | elseIfMatchesLexer | elseIfContainsLexer | elseLexer | endifLexer)
     (if_parsers | else_parsers)
   }
 
