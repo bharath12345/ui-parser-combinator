@@ -6,6 +6,7 @@ import tutorial.webapp.Lexer._
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scala.util.matching.Regex
+import scala.annotation.tailrec
 
 object AST {
 
@@ -39,44 +40,63 @@ object AST {
       case sel: SelectToken => sel
     }
 
-    /*def findSection(name: String): Option[SectionToken] = sectionList.find(x => x.id == name)
+    println(s"section list = $sectionList")
 
-    val logicTokens = tokens.dropWhile(t => t.isInstanceOf[SectionToken])
-    val logicList: List[(LogicToken, Int)] = for {
-      (token, i) <- logicTokens.zipWithIndex
-      if token.isInstanceOf[IfEqualsToken] || token.isInstanceOf[IfMatchesToken] || token.isInstanceOf[IfContainsToken] ||
+    def findSection(name: String): Option[SectionToken] = sectionList.find(x => x.id == name)
+
+    def isLogical(token: Token): Boolean =
+      if (token.isInstanceOf[IfEqualsToken] || token.isInstanceOf[IfMatchesToken] || token.isInstanceOf[IfContainsToken] ||
         token.isInstanceOf[ElseIfEqualsToken] || token.isInstanceOf[ElseIfMatchesToken] || token.isInstanceOf[ElseIfContainsToken] ||
-        token.isInstanceOf[ELSE.type]
-    } yield {
-      token.asInstanceOf[LogicToken] -> i
-    }
+        token.isInstanceOf[ELSE.type]) true else false
 
-    val statementList: List[(StatementToken, Int)] = for {
-      (token, i) <- logicTokens.zipWithIndex
-      if token.isInstanceOf[AddStatementToken] || token.isInstanceOf[RemoveStatementToken] ||
-        token.isInstanceOf[EnableStatementToken] || token.isInstanceOf[DisableStatementToken]
-    } yield {
-      token.asInstanceOf[StatementToken] -> i
-    }
+    def isStatement(token: Token): Boolean = if(token.isInstanceOf[AddStatementToken] || token.isInstanceOf[RemoveStatementToken] ||
+      token.isInstanceOf[EnableStatementToken] || token.isInstanceOf[DisableStatementToken]) true else false
 
-    var prevLogic: (LogicToken, Int) = null
-    val grouped: List[(LogicToken, List[StatementToken])] = for(logic <- logicList.tail) yield {
-      val filteredStatementGroup = {
-        if(prevLogic == null) statementList
-        else statementList.dropWhile(x => x._2 < prevLogic._2)
+    def recursive(logicTokens: List[Token], wellFormed: List[(LogicToken, List[StatementToken])]): List[(LogicToken, List[StatementToken])] = {
+      logicTokens match {
+        case Nil =>
+          wellFormed
+
+        case head +: tail =>
+          println(s"head = $head, tail = $tail")
+          val statements: ListBuffer[StatementToken] = ListBuffer()
+          if(isLogical(head)) {
+            val logicToken = head.asInstanceOf[LogicToken]
+            if(tail != Nil) {
+              @tailrec def loop(stmtTokens: List[Token]): List[(LogicToken, List[StatementToken])] = {
+                println(s"stmtTokens = $stmtTokens")
+                stmtTokens match {
+                  case Nil =>
+                    wellFormed
+
+                  case (h +: t) =>
+                    val newWellFormed = wellFormed :+ (logicToken -> statements.toList)
+                    println(s"new well formed = $newWellFormed")
+                    if (isLogical(h)) {
+                      recursive(h +: t, newWellFormed)
+                    } else if (isStatement(h)) {
+                      statements.addOne(h.asInstanceOf[StatementToken])
+                      loop(t)
+                    } else {
+                      wellFormed
+                    }
+                }
+              }
+              loop(tail)
+            } else {
+              wellFormed
+            }
+          } else {
+            println(s"head token not logical: $head")
+            wellFormed
+          }
       }
-      val statementGroup: List[StatementToken] = for {
-        statement <- filteredStatementGroup
-        if(statement._2 < logic._2)
-      } yield statement._1
-      val result = (prevLogic._1, statementGroup)
-      prevLogic = logic
-      result
     }
 
-    val wellFormed: List[(LogicToken, List[StatementToken])] = (logicList.head._1 -> grouped.head._2) +: grouped.tail
+    val wellFormed = recursive(tokens.dropWhile(t => t.isInstanceOf[SectionToken]), List())
+    println(s"well formed = $wellFormed")
 
-    val mess: List[(Logic, List[Statement])] = wellFormed.flatMap { lb =>
+    val xxx: List[(Logic, List[Statement])] = wellFormed.flatMap { lb =>
       val logic: Option[Logic] = lb._1 match {
         case iet: IfEqualsToken => findSection(iet.id).map {IfEqualsLogic(_, iet.str, List())}
         case imt: IfMatchesToken => findSection(imt.id).map {IfMatchesLogic(_, imt.regex, List())}
@@ -86,7 +106,7 @@ object AST {
         case ect: ElseIfContainsToken => findSection(ect.id).map {ElseIfContainsLogic(_, ect.id, List())}
       }
 
-      val xx: Option[(Logic, List[Statement])] = logic.map { l =>
+      val yyy: Option[(Logic, List[Statement])] = logic.map { l =>
         l -> lb._2.flatMap {
           case add: AddStatementToken => findSection(add.id).map {AddStatement}
           case remove: RemoveStatementToken => findSection(remove.id).map {RemoveStatement}
@@ -94,10 +114,10 @@ object AST {
           case disable: DisableStatementToken => findSection(disable.id).map {DisableStatement}
         }
       }
-      xx
+      yyy
     }
 
-    val yy: List[Logic] = mess.map { case (logic, stmts) =>
+    val zzz: List[Logic] = xxx.map { case (logic, stmts) =>
       logic match {
         case i: IfEqualsLogic => i.copy(statements = stmts)
         case i: IfMatchesLogic => i.copy(statements = stmts)
@@ -106,9 +126,11 @@ object AST {
         case i: ElseIfMatchesLogic => i.copy(statements = stmts)
         case i: ElseIfContainsLogic => i.copy(statements = stmts)
       }
-    }*/
+    }
 
-    AST(sectionList, LogicBlock(List()))
+    println(s"zzz = $zzz")
+
+    AST(sectionList, LogicBlock(zzz))
   }
 }
 
