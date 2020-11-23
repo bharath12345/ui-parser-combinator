@@ -3,10 +3,9 @@ package tutorial.webapp
 import tutorial.webapp.AST.LogicBlock
 import tutorial.webapp.Lexer._
 
-import scala.collection.mutable
+import scala.annotation.tailrec
 import scala.collection.mutable.ListBuffer
 import scala.util.matching.Regex
-import scala.annotation.tailrec
 
 object AST {
 

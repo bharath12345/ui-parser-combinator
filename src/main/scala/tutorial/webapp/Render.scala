@@ -2,13 +2,9 @@ package tutorial.webapp
 
 import org.scalajs.dom
 import org.scalajs.dom.document
-import org.scalajs.dom.raw.Element
+import org.scalajs.dom.raw.HTMLInputElement
 import tutorial.webapp.AST._
 import tutorial.webapp.Lexer._
-import org.scalajs.dom.{Event, _}
-import org.scalajs.dom.ext.KeyCode
-import org.scalajs.dom.raw.HTMLInputElement
-import scala.scalajs.js.annotation.JSExportTopLevel
 
 object Render {
 
@@ -68,6 +64,7 @@ object Render {
     input.classList.add("form-control")
     input.id = txt.id
     txt.value.foreach(v => input.setAttribute("value", v))
+    if(!txt.enabled) input.setAttribute("disabled", "true")
     column.appendChild(input)
   }
 
@@ -93,7 +90,7 @@ object Render {
   private def renderLogic(logic: Logic): Unit = {
     logic match {
       case iet: IfEqualsLogic =>
-        println(s"adding listener on ${iet.st.id}")
+        println(s"adding IfEqualsLogic listener on ${iet.st.id}")
         val elem = document.getElementById(iet.st.id)
         elem.addEventListener("input", { (e: dom.KeyboardEvent) =>
           e.currentTarget match {
@@ -112,6 +109,21 @@ object Render {
       case ict: IfContainsLogic =>
       case eet: ElseIfEqualsLogic =>
       case emt: ElseIfMatchesLogic =>
+        println(s"adding ElseIfMatchesLogic listener on ${emt.st.id}")
+        val elem = document.getElementById(emt.st.id)
+        elem.addEventListener("input", { (e: dom.KeyboardEvent) =>
+          e.currentTarget match {
+            case input: HTMLInputElement =>
+              println(s"on click firing. event = ${input.value}")
+              if(emt.regex.pattern.matcher(input.value).find()) {
+                println(s"you entered pattern matching regex")
+                val enableStmt = emt.statements.head.asInstanceOf[EnableStatement]
+                val target = document.getElementById(enableStmt.st.id)
+                target.removeAttribute("disabled")
+              }
+          }
+        })
+
       case ect: ElseIfContainsLogic =>
     }
   }

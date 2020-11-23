@@ -1,6 +1,6 @@
 package tutorial.webapp
 
-import tutorial.webapp.Lexer.{HeadingToken, SectionToken, TextInputToken, Token}
+import tutorial.webapp.Lexer.Token
 
 object ParserApp {
 
