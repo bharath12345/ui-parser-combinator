@@ -15,6 +15,9 @@ object ParserApp {
       |
       |  IF textInput1 EQUALS "test"
       |    DISABLE textInput3
+      |    #IF textInput2 CONTAINS "kumar"
+      |    #  ADD select1
+      |    #ENDIF
       |  ELSIF textInput1 MATCHES REGEX((mon|tues|wednes|thurs|fri|satur|sun)day)
       |    ENABLE textInput2
       |  ELSIF textInput3 CONTAINS "kumar"
