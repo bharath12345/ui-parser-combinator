@@ -102,7 +102,7 @@ object AST {
         case ict: IfContainsToken => findSection(ict.id).map {IfContainsLogic(_, ict.str, List())}
         case eet: ElseIfEqualsToken => findSection(eet.id).map {ElseIfEqualsLogic(_, eet.str, List())}
         case emt: ElseIfMatchesToken => findSection(emt.id).map {ElseIfMatchesLogic(_, emt.regex, List())}
-        case ect: ElseIfContainsToken => findSection(ect.id).map {ElseIfContainsLogic(_, ect.id, List())}
+        case ect: ElseIfContainsToken => findSection(ect.id).map {ElseIfContainsLogic(_, ect.str, List())}
       }
       println(s"lb = $lb, logic = $logic")
 

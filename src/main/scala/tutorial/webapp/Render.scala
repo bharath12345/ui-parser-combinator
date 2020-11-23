@@ -64,7 +64,8 @@ object Render {
     input.classList.add("form-control")
     input.id = txt.id
     txt.value.foreach(v => input.setAttribute("value", v))
-    if(!txt.enabled) input.setAttribute("disabled", "true")
+    if (!txt.enabled) input.setAttribute("disabled", "true")
+    if (!txt.display) input.setAttribute("hidden", "true")
     column.appendChild(input)
   }
 
@@ -77,10 +78,10 @@ object Render {
     select.setAttribute("aria-label", ".form-select-lg example")
     column.appendChild(select)
 
-    sel.values.zipWithIndex.foreach { case(value, count) =>
+    sel.values.zipWithIndex.foreach { case (value, count) =>
       println(s"adding option for value = $value")
       val option = document.createElement("option")
-      if(count == 0) option.setAttribute("selected", "")
+      if (count == 0) option.setAttribute("selected", "")
       else option.setAttribute("value", count.toString)
       option.innerText = value
       select.appendChild(option)
@@ -90,13 +91,13 @@ object Render {
   private def renderLogic(logic: Logic): Unit = {
     logic match {
       case iet: IfEqualsLogic =>
-        println(s"adding IfEqualsLogic listener on ${iet.st.id}")
+        println(s"adding IfEqualsLogic listener on ${iet}")
         val elem = document.getElementById(iet.st.id)
         elem.addEventListener("input", { (e: dom.KeyboardEvent) =>
           e.currentTarget match {
             case input: HTMLInputElement =>
               println(s"on click firing. event = ${input.value}")
-              if(input.value == iet.str ) {
+              if (input.value == iet.str) {
                 println(s"you entered test")
                 val disableStmt = iet.statements.head.asInstanceOf[DisableStatement]
                 val target = document.getElementById(disableStmt.st.id)
@@ -109,13 +110,13 @@ object Render {
       case ict: IfContainsLogic =>
       case eet: ElseIfEqualsLogic =>
       case emt: ElseIfMatchesLogic =>
-        println(s"adding ElseIfMatchesLogic listener on ${emt.st.id}")
+        println(s"adding ElseIfMatchesLogic listener on ${emt}")
         val elem = document.getElementById(emt.st.id)
         elem.addEventListener("input", { (e: dom.KeyboardEvent) =>
           e.currentTarget match {
             case input: HTMLInputElement =>
               println(s"on click firing. event = ${input.value}")
-              if(emt.regex.pattern.matcher(input.value).find()) {
+              if (emt.regex.pattern.matcher(input.value).find()) {
                 println(s"you entered pattern matching regex")
                 val enableStmt = emt.statements.head.asInstanceOf[EnableStatement]
                 val target = document.getElementById(enableStmt.st.id)
@@ -125,6 +126,20 @@ object Render {
         })
 
       case ect: ElseIfContainsLogic =>
+        println(s"adding ElseIfContainsLogic listener on ${ect}")
+        val elem = document.getElementById(ect.st.id)
+        elem.addEventListener("input", { (e: dom.KeyboardEvent) =>
+          e.currentTarget match {
+            case input: HTMLInputElement =>
+              println(s"on click firing. event = ${input.value}")
+              if (input.value.contains(ect.str)) {
+                println(s"you satisfied contains criterion")
+                val addStmt = ect.statements.head.asInstanceOf[AddStatement]
+                val target = document.getElementById(addStmt.st.id)
+                target.removeAttribute("hidden")
+              }
+          }
+        })
     }
   }
 }

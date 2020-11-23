@@ -10,12 +10,15 @@ object ParserApp {
       |  TEXTINPUT id=textInput1 name="Textbox One"
       |  TEXTINPUT id=textInput2 name="Textbox Two"   value="Type here" disabled
       |  TEXTINPUT id=textInput3 name="Textbox Three" value="Type here" required
-      |  SELECT id=select1 name="Select City" options=[ "Ford", "BMW", "Fiat" ] nodisplay
+      |  SELECT id=select1 name="Select City" options=[ "Ford", "BMW", "Fiat" ]
+      |  TEXTINPUT id=textInput4 name="Textbox Four" value="Type here" nodisplay
       |
       |  IF textInput1 EQUALS "test"
       |    DISABLE textInput3
       |  ELSIF textInput1 MATCHES REGEX((mon|tues|wednes|thurs|fri|satur|sun)day)
       |    ENABLE textInput2
+      |  ELSIF textInput3 CONTAINS "kumar"
+      |    ADD textInput4
       |  ELSE
       |    # maybe something here
       |  ENDIF
