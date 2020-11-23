@@ -20,9 +20,9 @@ object Lexer {
     val id: String
   }
   case class HeadingToken(id: String, title: Option[String]) extends SectionToken
-  case class TextInputToken(name: String, id: String, value: Option[String],
+  case class TextInputToken(id: String, name: String, value: Option[String],
                             required: Boolean, enabled: Boolean, display: Boolean) extends SectionToken
-  case class SelectToken(name: String, id: String, values: List[String],
+  case class SelectToken(id: String, name: String, values: List[String],
                          required: Boolean, enabled: Boolean, display: Boolean) extends SectionToken with TokenCommon
 
 

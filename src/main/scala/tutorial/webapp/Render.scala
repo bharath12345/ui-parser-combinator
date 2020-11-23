@@ -3,8 +3,11 @@ package tutorial.webapp
 import org.scalajs.dom
 import org.scalajs.dom.document
 import org.scalajs.dom.raw.Element
-import tutorial.webapp.Lexer.{EXIT, HeadingToken, SectionToken, SelectToken, TextInputToken, Token}
-
+import tutorial.webapp.AST._
+import tutorial.webapp.Lexer._
+import org.scalajs.dom.{Event, _}
+import org.scalajs.dom.ext.KeyCode
+import org.scalajs.dom.raw.HTMLInputElement
 import scala.scalajs.js.annotation.JSExportTopLevel
 
 object Render {
@@ -28,6 +31,8 @@ object Render {
         case sel: SelectToken => renderSelect(sel)
       }
     }
+
+    ast.lb.logics.foreach(renderLogic)
   }
 
   private def renderHeading(ht: HeadingToken): Unit = {
@@ -82,6 +87,32 @@ object Render {
       else option.setAttribute("value", count.toString)
       option.innerText = value
       select.appendChild(option)
+    }
+  }
+
+  private def renderLogic(logic: Logic): Unit = {
+    logic match {
+      case iet: IfEqualsLogic =>
+        println(s"adding listener on ${iet.st.id}")
+        val elem = document.getElementById(iet.st.id)
+        elem.addEventListener("input", { (e: dom.KeyboardEvent) =>
+          e.currentTarget match {
+            case input: HTMLInputElement =>
+              println(s"on click firing. event = ${input.value}")
+              if(input.value == iet.str ) {
+                println(s"you entered test")
+                val disableStmt = iet.statements.head.asInstanceOf[DisableStatement]
+                val target = document.getElementById(disableStmt.st.id)
+                target.setAttribute("disabled", "true")
+              }
+          }
+        })
+
+      case imt: IfMatchesLogic =>
+      case ict: IfContainsLogic =>
+      case eet: ElseIfEqualsLogic =>
+      case emt: ElseIfMatchesLogic =>
+      case ect: ElseIfContainsLogic =>
     }
   }
 }

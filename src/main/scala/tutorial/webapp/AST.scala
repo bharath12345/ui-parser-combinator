@@ -105,8 +105,10 @@ object AST {
         case emt: ElseIfMatchesToken => findSection(emt.id).map {ElseIfMatchesLogic(_, emt.regex, List())}
         case ect: ElseIfContainsToken => findSection(ect.id).map {ElseIfContainsLogic(_, ect.id, List())}
       }
+      println(s"lb = $lb, logic = $logic")
 
       val yyy: Option[(Logic, List[Statement])] = logic.map { l =>
+        println(s"lb = $lb, statements = ${lb._2}")
         l -> lb._2.flatMap {
           case add: AddStatementToken => findSection(add.id).map {AddStatement}
           case remove: RemoveStatementToken => findSection(remove.id).map {RemoveStatement}
