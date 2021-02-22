@@ -49,7 +49,7 @@ class SchemaParser extends RegexParsers {
   }
 
   private def get(line: String): Option[Token] = {
-    val exit: Parser[EXIT.type] = ExitLexer().asInstanceOf[Parser[EXIT.type]]
+    val exit: Parser[EndSection.type] = EndSectionLexer().asInstanceOf[Parser[EndSection.type]]
     val parser = phrase(rep1(exit | sectionParsers() | logicParsers() | statementParsers()))
 
     parse(parser, line) match {

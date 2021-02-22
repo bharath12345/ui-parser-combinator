@@ -6,7 +6,7 @@ object ParserApp {
 
   val grammar: Array[String] =
     """# this is a comment
-      |DEFINE SECTION ContentBranding title="Content branding details"
+      |NEW SECTION Branding title="Branding details"
       |  TEXTINPUT id=textInput1 name="Textbox One"
       |  TEXTINPUT id=textInput2 name="Textbox Two"   value="Type here" disabled
       |  TEXTINPUT id=textInput3 name="Textbox Three" value="Type here" required
@@ -25,7 +25,7 @@ object ParserApp {
       |  ELSE
       |    # maybe something here
       |  ENDIF
-      |;
+      |END SECTION
       |""".stripMargin.split("\\n")
 
   def main(args: Array[String]): Unit = {

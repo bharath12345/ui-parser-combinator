@@ -14,7 +14,7 @@ object Lexer {
 
   sealed trait Token
 
-  case object EXIT extends Token
+  case object EndSection extends Token
 
   sealed trait SectionToken extends Token {
     val id: String
@@ -72,18 +72,18 @@ trait RegexLexer extends RegexParsers {
 
 }
 
-object ExitLexer extends RegexLexer {
+object EndSectionLexer extends RegexLexer {
 
-  def apply(): Parser[EXIT.type] = {
-    regexMatch(regex) ^^ (m => EXIT)
+  def apply(): Parser[EndSection.type] = {
+    regexMatch(regex) ^^ (m => EndSection)
   }
 
-  override protected val regex: Regex = ";".r
+  override protected val regex: Regex = "END SECTION".r
 }
 
 object SectionLexer extends RegexLexer {
 
-  override protected val regex: Regex = s"""^DEFINE\\s+SECTION\\s+(\\w+)\\s*(title\\s*=\\s*"(.*?)")?$$""".r
+  override protected val regex: Regex = s"""^NEW\\s+SECTION\\s+(\\w+)\\s*(title\\s*=\\s*"(.*?)")?$$""".r
 
   def apply(): Parser[SectionToken] =
     regexMatch(regex) ^^ (m => get(m.subgroups.map(x => if (x == null) x else x.trim): _*))
